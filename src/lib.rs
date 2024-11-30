@@ -2,15 +2,61 @@ use proc_macro::Group;
 use proc_macro::Punct;
 use proc_macro::TokenStream;
 use proc_macro::TokenTree;
-#[derive(Debug)]
+fn add(x: TokenStream, y: TokenStream) -> TokenStream {
+    format!("add({}, {})", x, y).parse().unwrap()
+}
+fn sub(x: TokenStream, y: TokenStream) -> TokenStream {
+    format!("sub({}, {})", x, y).parse().unwrap()
+}
+fn mul(x: TokenStream, y: TokenStream) -> TokenStream {
+    format!("mul({}, {})", x, y).parse().unwrap()
+}
+fn div(x: TokenStream, y: TokenStream) -> TokenStream {
+    format!("div({}, {})", x, y).parse().unwrap()
+}
+#[derive(Clone, Debug)]
 enum ParsedToken {
     Operator(Punct),
     Getter(TokenStream),
 }
-#[derive(Debug)]
+impl ParsedToken {
+    fn get_getter(self) -> TokenStream {
+        match self {
+            Self::Operator(_) => panic!("called get_getter on a ParsedToken::Operator"),
+            Self::Getter(token_stream) => token_stream,
+        }
+    }
+}
+#[derive(Clone, Debug)]
 enum ParsedTwiceToken {
     Operator(Punct),
     MulDivGroup(Vec<ParsedToken>),
+}
+fn parse_mul_div_group(input: Vec<ParsedToken>) -> TokenStream {
+    let mut output: Option<TokenStream> = None;
+    let mut operator: Option<Punct> = None;
+    for token in input {
+        match token {
+            ParsedToken::Operator(punct) => {
+                operator = Some(punct);
+            }
+            ParsedToken::Getter(token_stream) => match operator {
+                Some(ref operator) => match operator.as_char() {
+                    '*' => {
+                        output = Some(mul(output.unwrap(), token_stream));
+                    }
+                    '/' => {
+                        output = Some(div(output.unwrap(), token_stream));
+                    }
+                    _ => unimplemented!(),
+                },
+                None => {
+                    output = Some(token_stream);
+                }
+            },
+        }
+    }
+    output.unwrap()
 }
 #[proc_macro]
 pub fn math(input: TokenStream) -> TokenStream {
@@ -64,24 +110,5 @@ pub fn math(input: TokenStream) -> TokenStream {
     }
     parsed_twice.push(ParsedTwiceToken::MulDivGroup(in_progress_mul_div_group));
 
-    for i in parsed_twice {
-        println!("{:?}", i);
-    }
-    println!("im done now");
-
-    /*for i in &parsed {
-        println!("{:?}", i);
-    }
-
-    let mut check = TokenStream::new();
-    for i in parsed {
-        check.extend(match i {
-            ParsedToken::Operator(punct) => TokenStream::from(TokenTree::Punct(punct)),
-            ParsedToken::Getter(token_stream) => token_stream,
-        });
-    }
-    println!("AAAAAAAAAA");
-    println!("{}", check);
-    println!("LOOOK ABOVE");*/
     input
 }
