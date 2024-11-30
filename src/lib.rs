@@ -1,3 +1,4 @@
+use proc_macro::Group;
 use proc_macro::Punct;
 use proc_macro::TokenStream;
 use proc_macro::TokenTree;
@@ -11,8 +12,8 @@ pub fn math(input: TokenStream) -> TokenStream {
     let mut parsed: Vec<ParsedToken> = Vec::new();
     let mut in_progress_getter: Vec<TokenTree> = Vec::new();
     for token in input.clone() {
-        if let TokenTree::Punct(ref punct) = token {
-            match punct.as_char() {
+        match token {
+            TokenTree::Punct(ref punct) => match punct.as_char() {
                 '+' | '-' | '*' | '/' => {
                     parsed.push(ParsedToken::Getter(TokenStream::from_iter(
                         in_progress_getter,
@@ -22,7 +23,15 @@ pub fn math(input: TokenStream) -> TokenStream {
                     continue;
                 }
                 _ => {}
+            },
+            TokenTree::Group(group) => {
+                in_progress_getter.push(TokenTree::Group(Group::new(
+                    group.delimiter(),
+                    math(group.stream()),
+                )));
+                continue;
             }
+            _ => {}
         }
         in_progress_getter.push(token);
     }
