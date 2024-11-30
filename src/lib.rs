@@ -39,12 +39,13 @@ enum ParsedToken {
     Operator(Punct),
     Getter(TokenStream),
 }
+type MulDivGroup = Vec<ParsedToken>;
 #[derive(Clone, Debug)]
 enum ParsedTwiceToken {
     Operator(Punct),
-    MulDivGroup(Vec<ParsedToken>),
+    MulDivGroup(MulDivGroup),
 }
-fn parse_mul_div_group(input: Vec<ParsedToken>) -> TokenStream {
+fn parse_mul_div_group(input: MulDivGroup) -> TokenStream {
     let mut output: Option<TokenStream> = None;
     let mut operator: Option<Punct> = None;
     for token in input {
@@ -103,7 +104,7 @@ pub fn math(input: TokenStream) -> TokenStream {
     )));
 
     let mut parsed_twice: Vec<ParsedTwiceToken> = Vec::new();
-    let mut in_progress_mul_div_group: Vec<ParsedToken> = Vec::new();
+    let mut in_progress_mul_div_group: MulDivGroup = MulDivGroup::new();
     for token in parsed {
         match token {
             ParsedToken::Operator(ref punct) => match punct.as_char() {
@@ -145,6 +146,5 @@ pub fn math(input: TokenStream) -> TokenStream {
             },
         }
     }
-    println!("{}", output.clone().unwrap());
     output.unwrap()
 }
