@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// Copyright 2024 UxuginPython
 use proc_macro::Group;
 use proc_macro::Punct;
 use proc_macro::TokenStream;

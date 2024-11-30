@@ -1,7 +1,15 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright 2024 UxuginPython
 [package]
 name = "rrtk_proc"
-version = "0.1.0"
+version = "0.1.0-alpha.0"
+license = "BSD-3-Clause"
 edition = "2021"
+authors = ["UxuginPython <uxugin at uxugin dot com>"]
+repository = "https://github.com/UxuginPython/rrtk_proc"
+description = "Experimental RRTK math! macro"
+keywords = ["robotics", "control"]
+categories = ["science::robotics", "no-std"]
 
 [lib]
 proc-macro = true
