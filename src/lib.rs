@@ -32,6 +32,14 @@ enum ParsedTwiceToken {
     Operator(Punct),
     MulDivGroup(Vec<ParsedToken>),
 }
+impl ParsedTwiceToken {
+    fn get_mul_div_group(self) -> Vec<ParsedToken> {
+        match self {
+            Self::Operator(_) => panic!("called get_mul_div_group on a ParsedTwiceToken::Operator"),
+            Self::MulDivGroup(mul_div_group) => mul_div_group,
+        }
+    }
+}
 fn parse_mul_div_group(input: Vec<ParsedToken>) -> TokenStream {
     let mut output: Option<TokenStream> = None;
     let mut operator: Option<Punct> = None;
@@ -57,6 +65,18 @@ fn parse_mul_div_group(input: Vec<ParsedToken>) -> TokenStream {
         }
     }
     output.unwrap()
+}
+fn mul_div_group_to_token_stream(input: Vec<ParsedToken>) -> TokenStream {
+    let mut output = TokenStream::new();
+    for token in input {
+        match token {
+            ParsedToken::Operator(punct) => {
+                output.extend(TokenStream::from(TokenTree::Punct(punct)))
+            }
+            ParsedToken::Getter(token_stream) => output.extend(token_stream),
+        }
+    }
+    output
 }
 #[proc_macro]
 pub fn math(input: TokenStream) -> TokenStream {
@@ -110,5 +130,30 @@ pub fn math(input: TokenStream) -> TokenStream {
     }
     parsed_twice.push(ParsedTwiceToken::MulDivGroup(in_progress_mul_div_group));
 
-    input
+    //println!("{}", parse_mul_div_group(parsed_twice[0].clone().get_mul_div_group()));
+    let mut output: Option<TokenStream> = None;
+    let mut operator: Option<Punct> = None;
+    for token in parsed_twice {
+        match token {
+            ParsedTwiceToken::Operator(punct) => {
+                operator = Some(punct);
+            }
+            ParsedTwiceToken::MulDivGroup(mul_div_group) => match operator {
+                Some(ref operator) => match operator.as_char() {
+                    '+' => {
+                        output = Some(add(output.unwrap(), parse_mul_div_group(mul_div_group)));
+                    }
+                    '-' => {
+                        output = Some(sub(output.unwrap(), parse_mul_div_group(mul_div_group)));
+                    }
+                    _ => unimplemented!(),
+                },
+                None => {
+                    output = Some(parse_mul_div_group(mul_div_group));
+                }
+            },
+        }
+    }
+    println!("{}", output.clone().unwrap());
+    output.unwrap()
 }
