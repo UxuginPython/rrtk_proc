@@ -7,6 +7,11 @@ enum ParsedToken {
     Operator(Punct),
     Getter(TokenStream),
 }
+#[derive(Debug)]
+enum ParsedTwiceToken {
+    Operator(Punct),
+    MulDivGroup(Vec<ParsedToken>),
+}
 #[proc_macro]
 pub fn math(input: TokenStream) -> TokenStream {
     let mut parsed: Vec<ParsedToken> = Vec::new();
@@ -38,7 +43,33 @@ pub fn math(input: TokenStream) -> TokenStream {
     parsed.push(ParsedToken::Getter(TokenStream::from_iter(
         in_progress_getter,
     )));
-    for i in &parsed {
+
+    let mut parsed_twice: Vec<ParsedTwiceToken> = Vec::new();
+    let mut in_progress_mul_div_group: Vec<ParsedToken> = Vec::new();
+    for token in parsed {
+        match token {
+            ParsedToken::Operator(ref punct) => match punct.as_char() {
+                '+' | '-' => {
+                    parsed_twice.push(ParsedTwiceToken::MulDivGroup(in_progress_mul_div_group));
+                    parsed_twice.push(ParsedTwiceToken::Operator(punct.clone()));
+                    in_progress_mul_div_group = Vec::new();
+                    continue;
+                }
+                '*' | '/' => {}
+                _ => unimplemented!(),
+            },
+            ParsedToken::Getter(_) => {}
+        }
+        in_progress_mul_div_group.push(token);
+    }
+    parsed_twice.push(ParsedTwiceToken::MulDivGroup(in_progress_mul_div_group));
+
+    for i in parsed_twice {
+        println!("{:?}", i);
+    }
+    println!("im done now");
+
+    /*for i in &parsed {
         println!("{:?}", i);
     }
 
@@ -51,6 +82,6 @@ pub fn math(input: TokenStream) -> TokenStream {
     }
     println!("AAAAAAAAAA");
     println!("{}", check);
-    println!("LOOOK ABOVE");
+    println!("LOOOK ABOVE");*/
     input
 }
