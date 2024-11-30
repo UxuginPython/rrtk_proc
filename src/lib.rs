@@ -3,16 +3,36 @@ use proc_macro::Punct;
 use proc_macro::TokenStream;
 use proc_macro::TokenTree;
 fn add(x: TokenStream, y: TokenStream) -> TokenStream {
-    format!("rrtk::rc_ref_cell_reference(rrtk::streams::math::Sum2::new({}, {}))", x, y).parse().unwrap()
+    format!(
+        "rrtk::rc_ref_cell_reference(rrtk::streams::math::Sum2::new({}, {}))",
+        x, y
+    )
+    .parse()
+    .unwrap()
 }
 fn sub(x: TokenStream, y: TokenStream) -> TokenStream {
-    format!("rrtk::rc_ref_cell_reference(rrtk::streams::math::DifferenceStream::new({}, {}))", x, y).parse().unwrap()
+    format!(
+        "rrtk::rc_ref_cell_reference(rrtk::streams::math::DifferenceStream::new({}, {}))",
+        x, y
+    )
+    .parse()
+    .unwrap()
 }
 fn mul(x: TokenStream, y: TokenStream) -> TokenStream {
-    format!("rrtk::rc_ref_cell_reference(rrtk::streams::math::Product2::new({}, {}))", x, y).parse().unwrap()
+    format!(
+        "rrtk::rc_ref_cell_reference(rrtk::streams::math::Product2::new({}, {}))",
+        x, y
+    )
+    .parse()
+    .unwrap()
 }
 fn div(x: TokenStream, y: TokenStream) -> TokenStream {
-    format!("rrtk::rc_ref_cell_reference(rrtk::streams::math::QuotientStream::new({}, {}))", x, y).parse().unwrap()
+    format!(
+        "rrtk::rc_ref_cell_reference(rrtk::streams::math::QuotientStream::new({}, {}))",
+        x, y
+    )
+    .parse()
+    .unwrap()
 }
 #[derive(Clone, Debug)]
 enum ParsedToken {
